@@ -1,0 +1,59 @@
+<project name="Salesforce" default="deploy" basedir="." xmlns:sf="antlib:com.salesforce">
+
+    <property file="build.properties"/>
+    <property environment="env"/>
+    <property name="ant.jar" value="ant-salesforce.jar"/>
+
+    <property name="sf.username" value="${salesforce.username}"/>
+    <property name="sf.password" value="${salesforce.password}"/>
+    <property name="sf.sessionId" value="${salesforce.sessionId}"/>
+    <property name="sf.testLevel" value="${salesforce.testlevel}"/>
+    <property name="sf.serverurl" value="${salesforce.serverurl}"/>
+
+    <path id="classpath">
+        <fileset dir="${lib.dir}" includes="**/*.jar"/>
+    </path>
+
+    <taskdef resource="com/salesforce/antlib.xml" uri="antlib:com.salesforce">
+        <classpath>
+            <pathelement location="${ant.jar}" />        	
+        </classpath>
+    </taskdef>
+
+    <target name="retrieve" depends="info">
+        <mkdir dir="../src"/>
+        <sf:retrieve username="${sf.username}" 
+            password="${sf.password}" 
+            serverurl="${sf.serverurl}"         
+            maxPoll="${sf.maxPoll}"
+            etrieveTarget="../src" 
+            unpackaged="./package.xml"
+        />
+    </target>
+
+    <target name="deployCheckOnly" depends="info">
+        <sf:deploy username="${sf.username}" 
+            password="${sf.password}" 
+            serverurl="${sf.serverurl}" 
+            maxPoll="${sf.maxPoll}" 
+            deployRoot="../src" 
+            rollbackOnError="true"
+            checkOnly="true" 
+        />
+	</target>
+
+    <target name="deploy" depends="info">
+        <sf:deploy username="${sf.username}" 
+            password="${sf.password}" 
+            serverurl="${sf.serverurl}" 
+            maxPoll="${sf.maxPoll}" 
+            deployRoot="../src" 
+            rollbackOnError="true"
+        />
+	</target>
+
+    <target name="info">
+        <echo message="UserName=${sf.username}, TestLevel=${sf.testLevel}, ServerURL=${sf.serverurl}" />
+    </target>
+
+</project>

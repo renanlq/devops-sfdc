@@ -1,0 +1,49 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+  branches:
+    include:
+    - master
+    - releases/*
+  paths:
+    exclude:
+    - README.md
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  BuildFile: './build/sample_build.xml'
+  BuildFolder: './build'
+  SourceFolder: './src'
+
+steps:
+- task: Ant@1
+  inputs:
+    workingDirectory: ''
+    buildFile: '$(BuildFile)'
+    options: -Dsalesforce.loginurl=$(salesforce.loginurl) -Dsalesforce.password=$(salesforce.password) -Dsalesforce.testLevel=$(salesforce.testlevel) -Dsalesforce.username=$(salesforce.username)
+    targets: 'deployCheckOnly'
+    javaHomeOption: 'JDKVersion'
+    jdkVersionOption: '1.8'
+    jdkArchitectureOption: 'x64'
+    publishJUnitResults: false
+    testResultsFiles: '**/TEST-*.xml'
+
+- task: CopyFiles@2
+  inputs:
+    sourceFolder: '$(BuildFolder)'
+    contents: '**/*' 
+    targetFolder: '$(build.artifactstagingdirectory)/release/build'
+
+- task: CopyFiles@2
+  inputs:
+    sourceFolder: '$(SourceFolder)'
+    contents: '**/*' 
+    targetFolder: '$(build.artifactstagingdirectory)/release/src'
+
+- task: PublishBuildArtifacts@1
+  displayName: 'Publish Artifact: drop'
